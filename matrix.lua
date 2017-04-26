@@ -1,5 +1,17 @@
 --here begins the functions for matrix things
 
+function copyMatrix(m)
+	 local ret = makeMatrix(4,4)
+	 for i =1, sizeOf(m) do
+	     for k = 1, sizeOf(m[1]) do
+	     	 ret[i][k] = m[i][k]
+	     end
+	 end
+	 return ret    
+end
+
+
+
 --prints the matrix
 function makeMatrix(x,y)
 	 local ret = {}

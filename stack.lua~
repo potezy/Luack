@@ -1,0 +1,16 @@
+
+function new_stack()
+	 local stack, i
+	 i = make_matrix(4,4)	 
+
+end
+
+function push()
+
+end
+
+
+function pop()
+
+
+end
