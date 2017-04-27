@@ -12,8 +12,17 @@ function string:split(sep) --credit to lua user manual
     return fields
  end
 
+function make_int(matrix)
+	 for i = 1, sizeOf(matrix) do
+	     matrix[i] = tonumber(matrix[i])
+	 end
+	 return matrix
+end
+
 function parseFile(f)
-	 local lines,s,n,cStack,a = {},0,"pic.png",{}
+	 local lines = {}
+	 local s = 0
+	 local n = "pic.png"
 	 for line in io.lines(f) do
 	     table.insert(lines, line)
 	     s = s + 1
@@ -36,14 +45,15 @@ function parseFile(f)
 	     elseif (ln[1] == "move") then 
 	     	    args = lines[i+1]:split(" ")
 	     	    tMatrix = matrixMult(translate(args[1], args[2],args[3]), tMatrix)
-	
+
 	     elseif (ln[1] == "rotate") then
 	     	    args = lines[i+1]:split(" ")
-	     	    tMatrix = matrixMult(rotate(args[1], math.rad(args[2])), tMatrix)
-		   		  
+	     	    tMatrix = matrixMult(rotate(args[1], math.rad(args[2])), tMatrix)		   	
+
              elseif (ln[1] == "apply") then
 	     	    eMatrix = matrixMult(tMatrix, eMatrix)
 		    poly_matrix = matrixMult(tMatrix,poly_matrix)	
+
 	     elseif (ln[1] == "save") then
 	     	    args = lines[i+1]:split(" ")
 		    save(board)
@@ -52,10 +62,10 @@ function parseFile(f)
 	
 	     elseif (ln[1] == "display") then
 	     	    clear_screen(board)
-	     	    draw(board, eMatrix)
-		    --draw_polygons(poly_matrix,board,4)
+	     	    --draw(board, eMatrix)
+		    draw_polygons(poly_matrix,board,4)
 	     	    save(board)
-	     	    a = "display line.ppm" 
+	     	    local a = "display line.ppm" 
 		    print(a)
 	     	    os.execute(a) 
 	
@@ -81,12 +91,6 @@ function parseFile(f)
 	     elseif (ln[1] == "box") then
 	     	    args = lines[i+1]:split(" ")
 		    add_box(args[1],args[2],args[3],args[4],args[5],args[6])
-
-	     elseif (ln[1] == "push") then	
-
-	     elseif (ln[1] == "pop") then	
-	  
-		 
 	     end
  	 end
 end
