@@ -20,35 +20,44 @@ function make_int(matrix)
 end
 
 function parseFile(f)
-	 local lines = {}
-	 local s = 0
-	 local n = "pic.png"
+	 local lines,s,n,lstack,sizeL,top,temp = {},0,"pic.png"
+	 lstack = new_stack()
 	 for line in io.lines(f) do
 	     table.insert(lines, line)
 	     s = s + 1
 	 end
-	 for i = 1, s do
-	     local temp 
+	 for i = 1, s do 
+	     top = lstack[sizeOf(lstack)]
 	     ln = lines[i]:split(" ")
 
 	     if (ln[1] == "line") then
 	     	args = lines[i+1]:split(" ")
 	     	addEdge(eMatrix, args[1], args[2],args[3],args[4],args[5],args[6])
-	
+		matrixMult(top , eMatrix)
+		draw(board,eMatrix)
+		eMatrix = makeMatrix(4,0)		
+
 	     elseif (ln[1] == "ident") then
 	     	    identify(tMatrix)
 	
 	     elseif (ln[1] == "scale") then
 	     	    args = lines[i+1]:split(" ")
-		    tMatrix = matrixMult(scale(args[1], args[2], args[3]), tMatrix)
-	
+		    temp = scale(args[1], args[2], args[3])
+		    top =matrixMult(top,temp)
+		    lstack[sizeOf(lstack)] = top		    
+
 	     elseif (ln[1] == "move") then 
 	     	    args = lines[i+1]:split(" ")
-	     	    tMatrix = matrixMult(translate(args[1], args[2],args[3]), tMatrix)
+	     	    temp = translate(args[1], args[2],args[3])
+		    --printMatrix(temp)
+		    top = matrixMult(top,temp)		    		    	      
+		    lstack[sizeOf(lstack)] = top		    
 
 	     elseif (ln[1] == "rotate") then
 	     	    args = lines[i+1]:split(" ")
-	     	    tMatrix = matrixMult(rotate(args[1], math.rad(args[2])), tMatrix)		   	
+	     	    temp = rotate(args[1], math.rad(args[2]))
+		    top = matrixMult(top,temp)		   	
+		    lstack[sizeOf(lstack)] = top		    
 
              elseif (ln[1] == "apply") then
 	     	    eMatrix = matrixMult(tMatrix, eMatrix)
@@ -61,9 +70,6 @@ function parseFile(f)
 		    os.execute("convert line.ppm " .. n) 
 	
 	     elseif (ln[1] == "display") then
-	     	    clear_screen(board)
-	     	    --draw(board, eMatrix)
-		    draw_polygons(poly_matrix,board,4)
 	     	    save(board)
 	     	    local a = "display line.ppm" 
 		    print(a)
@@ -72,25 +78,58 @@ function parseFile(f)
 	     elseif (ln[1] == "circle") then
 	     	    args = lines[i+1]:split(" ")
 		    circle(args[1], args[2], args[3], args[4])	
-	    	
+		    eMatrix =matrixMult(top,eMatrix)
+		    draw(board,eMatrix)
+		    eMatrix = makeMatrix(4,0)	    	    
+
 	     elseif (ln[1] == "hermite" or ln[1] == "bezier") then
 	     	    args = lines[i+1]:split(" ")
 		    add_curve(args[1],args[2],args[3],args[4],args[5],args[6],args[7],args[8], ln[1])
+		    eMatrix =matrixMult(top,eMatrix)
+		    draw(board, eMatrix)
+		    eMatrix = makeMatrix(4,0)		    
 
 	     elseif (ln[1] == "clear") then
 	     	    eMatrix = {{},{},{},{}}
+		    poly_matrix = makeMatrix(4,0)		    
 
 	     elseif (ln[1] == "sphere") then
 	     	    args = lines[i+1]:split(" ")
 		    add_sphere(args[1],args[2],args[3],args[4])
+		    poly_matrix = matrixMult(top,poly_matrix)
+		    draw_polygons(poly_matrix,board,4)
+		    poly_matrix = makeMatrix(4,0)		    
 
 	     elseif (ln[1] == "torus") then
 	     	    args = lines[i+1]:split(" ")
 		    add_torus(args[1],args[2],args[3],args[4],args[5])	     	    
+		    
+		    poly_matrix = matrixMult(top,poly_matrix)
+		    draw_polygons(poly_matrix,board,4)
+		    poly_matrix = makeMatrix(4,0)
 
 	     elseif (ln[1] == "box") then
 	     	    args = lines[i+1]:split(" ")
+		    --print(args[6])
 		    add_box(args[1],args[2],args[3],args[4],args[5],args[6])
+		    
+		    --printMatrix(poly_matrix)
+		    --printMatrix(top)
+		    --printMatrix(poly_matrix)
+
+		    poly_matrix = matrixMult(top,poly_matrix)
+		    --printMatrix(poly_matrix)
+		    draw_polygons(poly_matrix,board,4)		    
+		    poly_matrix = makeMatrix(4,0)
+
+             elseif (ln[1] == "push") then
+	     	    push(lstack)
+
+	     elseif (ln[1] == "pop") then
+	     	    pop(lstack)
+	     
+	     
+	     	    	     
 	     end
  	 end
 end

@@ -67,12 +67,11 @@ end
 
 function draw_polygons(matrix,board,c)
 	  local x0,x1,x2,y0,y1,y1,z0,z1,z2,i
-	  --for k = o , sizeOf(matrix[1]
-	  --print(sizeOf(matrix[1]),sizeOf(matrix[2]),sizeOf(matrix[3]))
 	  for i = 1, sizeOf(matrix[1])-3 ,3 do
 	      local color = Color:new(14,140,240)
-	      --print(matrix[1][i], matrix[2][i], matrix[1][i+1], matrix[2][i+1], matrix[1][i+2], matrix[2][i+2])
+	      
 	      if backface_cull(matrix[1][i],matrix[2][i],matrix[3][i], matrix[1][i+1],matrix[2][i+1],matrix[3][i+1],matrix[1][i+2],matrix[2][i+2],matrix[3][i+2]) then
+	      --print(matrix[1][i], matrix[2][i], matrix[1][i+1], matrix[2][i+1])
 	      draw_line(matrix[1][i],
 			matrix[2][i],
 	   		matrix[1][i+1],
@@ -122,6 +121,10 @@ end
 
 --function to draw line
 function draw_line(x0 , y0 , x1, y1 , c , s)
+	 x0 = tonumber(x0)
+	 x1 = tonumber(x1)
+	 y0 = tonumber(y0)
+	 y1 = tonumber(y1)
 	 if (x0>x1) then
 	    xt = x0 	   
 	    yt = y0

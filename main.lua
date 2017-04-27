@@ -2,6 +2,7 @@ require 'matrix'
 require 'draw'
 require 'display'
 require 'parser'
+require 'stack'
 
 eMatrix = {{},{},{},{}}
 tMatrix = {{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}}
