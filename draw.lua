@@ -93,8 +93,11 @@ function scan_line( matrix, board,i)
 	 
 	 local deltaY,dx1,dx0 
 	 deltaY = 1
-	 for i = min[2], max[2], deltaY do
-	     
+	 dx0 = (top[1] - bot[1]) / (top[2] - top[1])
+	 dx1 = (mid[1] - bot[1]) / (mid[2] - bot[2])
+	 for minY = 0, max[2]-min[2], deltaY do
+	     if (minY +min[2] > mid[2]) then
+	     	
 	 end 
 	 
 	 
