@@ -59,7 +59,7 @@ function add_polygon(matrix,x0,y0,z0, x1,y1,z1, x2,y2,z2)
 	 addPoint(matrix, x2,y2,z2)
 end
 
-function vertices(y0,y1,y2)
+function vertices(x0,x1,x2,y0,y1,y2)
 	 local top,mid,bot
 	 if (y0>=y1 and y0>=y2) then
 	    top = {x0,y0}
@@ -67,52 +67,76 @@ function vertices(y0,y1,y2)
 	       mid = {x1,y1}
 	       bot = {x2,y2}
 	    end
-	 else if (y1>=y2 and y1>=y0) then	
+
+	 elseif (y1>=y2 and y1>=y0) then	
 	    top = {x1,y1}
 	    if (y0 >= y2) then
 	       mid = {x0,y0}
 	       bot = {x2,y2}
 	    end   
+
 	 else
 	    top = {x2,y2}
 	    if (y0 >= y1) then
 	       mid = {x0,y0} 
 	       bot = {x1,y1}
+	    else 
+	       mid = {x1,y1}
+	       bot = {x0,y0}	    
 	    end
+
 	  end
-	  return bot,mid,top 
-	 
+	  return bot,mid,top 	 
 end
 
 function scan_line( matrix, board,i)
 	 local x0,x1,x2,y0,y1,y2,bot,top,mid
+	 x0 = matrix[1][i]
+	 x1 = matrix[1][i+1]
+	 x2 = matrix[1][i+2]
 	 y0 = matrix[2][i]
-`	 y1 = matrix[2][i+1]
+	 y1 = matrix[2][i+1]
 	 y2 = matrix[2][i+2]
-	 bot,mid,top = verticies(y0,y1,y2)
+	 bot,mid,top = vertices(x0,x1,x2,y0,y1,y2)
 	 
-	 local deltaY,dx1,dx0 
+	 local deltaY,dx1,dx0,color
+	 color = Color:new(256 , 0 , 0) --red
 	 deltaY = 1
-	 dx0 = (top[1] - bot[1]) / (top[2] - top[1])
-	 dx1 = (mid[1] - bot[1]) / (mid[2] - bot[2])
-	 for minY = 0, max[2]-min[2], deltaY do
-	     if (minY +min[2] > mid[2]) then
-	     	
-	 end 
-	 
-	 
-	 
 
+	 if (top[2] - bot[2] == 0) then dx0 = top[1] - bot[1]
+	 else dx0 = (top[1] - bot[1]) / (top[2] - bot[2]) end
+
+	 if (mid[2] - bot[2] == 0) then dx1 = mid[1] - bot[1]
+	 else dx1 = (mid[1] - bot[1]) / (mid[2] - bot[2]) end
+
+	 --dx1 is the shorter side
+
+	 --top[2] - bot[2] is how many Y values we go up
+	 --bot[2] is the beginning Y value max[2] is the end Y value
+	 local cx0,cx1
+	 cx0 = bot[1] 
+	 cx1 = mid[1]
+
+	 for minY = 0, top[2]-bot[2], deltaY do
+	     local currY = minY + bot[2]
+	     if (currY >= mid[2]) then
+	     	if(top[2] - mid[2] == 0) then dx1 = top[1] - mid[1]
+		else dx1 = (top[1] - mid[1]) / (top[2] - mid[2]) end
+	     end
+
+	     draw_line(cx0, currY,cx1, currY,color,board)     	
+	     cx0 = cx0 + dx0
+	     cx1 = cx1 + dx1
+	 end 
 end
 
 function draw_polygons(matrix,board,c)
 	 
 	  for i = 1, sizeOf(matrix[1])-3 ,3 do
 	      local color = Color:new(i^2%256 , i^3%256, i^4%256)
-	      local color2 = Color:new(250,125,50)	
 	      if backface_cull(matrix[1][i],matrix[2][i],matrix[3][i], matrix[1][i+1],matrix[2][i+1],matrix[3][i+1],matrix[1][i+2],matrix[2][i+2],matrix[3][i+2]) then 
 	      
-	      --scan_line(matrix,board,color2,i)
+	      scan_line(matrix,board,i)
 	      
 	      draw_line(matrix[1][i],
 			matrix[2][i],
