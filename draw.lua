@@ -66,6 +66,9 @@ function vertices(x0,x1,x2,y0,y1,y2)
 	    if (y1 >= y2) then
 	       mid = {x1,y1}
 	       bot = {x2,y2}
+	    else
+	       mid = {x2,y2}
+	       bot = {x2,y1}
 	    end
 
 	 elseif (y1>=y2 and y1>=y0) then	
@@ -73,7 +76,10 @@ function vertices(x0,x1,x2,y0,y1,y2)
 	    if (y0 >= y2) then
 	       mid = {x0,y0}
 	       bot = {x2,y2}
-	    end   
+	    else
+	       mid = {x2,y2}
+	       bot = {x0,y0} 		
+	    end
 
 	 else
 	    top = {x2,y2}
@@ -86,6 +92,7 @@ function vertices(x0,x1,x2,y0,y1,y2)
 	    end
 
 	  end
+	  --print("bot:",bot[1],bot[2], "\nmid:",mid[1],mid[2], "\ntop",top[1],top[2])
 	  return bot,mid,top 	 
 end
 
@@ -100,15 +107,17 @@ function scan_line( matrix, board,i)
 	 bot,mid,top = vertices(x0,x1,x2,y0,y1,y2)
 	 
 	 local deltaY,dx1,dx0,color
-	 color = Color:new(256 , 0 , 0) --red
+	 color = Color:new(128 , 0 , 0) --red
 	 deltaY = 1
+
+	 --if (i == 34) then print(y0,y1,y2,i) end
 
 	 if (top[2] - bot[2] == 0) then dx0 = top[1] - bot[1]
 	 else dx0 = (top[1] - bot[1]) / (top[2] - bot[2]) end
 
 	 if (mid[2] - bot[2] == 0) then dx1 = mid[1] - bot[1]
 	 else dx1 = (mid[1] - bot[1]) / (mid[2] - bot[2]) end
-
+	 print(dx0,dx1)
 	 --dx1 is the shorter side
 
 	 --top[2] - bot[2] is how many Y values we go up
@@ -123,7 +132,6 @@ function scan_line( matrix, board,i)
 	     	if(top[2] - mid[2] == 0) then dx1 = top[1] - mid[1]
 		else dx1 = (top[1] - mid[1]) / (top[2] - mid[2]) end
 	     end
-
 	     draw_line(cx0, currY,cx1, currY,color,board)     	
 	     cx0 = cx0 + dx0
 	     cx1 = cx1 + dx1
@@ -131,13 +139,11 @@ function scan_line( matrix, board,i)
 end
 
 function draw_polygons(matrix,board,c)
-	 
 	  for i = 1, sizeOf(matrix[1])-3 ,3 do
-	      local color = Color:new(i^2%256 , i^3%256, i^4%256)
+	      local color = Color:new(0 , 0 , 128)
 	      if backface_cull(matrix[1][i],matrix[2][i],matrix[3][i], matrix[1][i+1],matrix[2][i+1],matrix[3][i+1],matrix[1][i+2],matrix[2][i+2],matrix[3][i+2]) then 
-	      
-	      scan_line(matrix,board,i)
-	      
+	      --print("scanning line", i)
+	      --scan_line(matrix,board,i)  
 	      draw_line(matrix[1][i],
 			matrix[2][i],
 	   		matrix[1][i+1],
@@ -154,7 +160,9 @@ function draw_polygons(matrix,board,c)
 			matrix[2][i+2],
 	   		matrix[1][i],
 	   		matrix[2][i],
-			color,board)		
+			color,board)	
+	
+		scan_line(matrix,board,i)	
 	 end
 
 	 end
@@ -335,7 +343,7 @@ function add_sphere(cx , cy , cz , r )
 
 	 num_steps = 1/step 
 	 local lat, longt = 0,0
-	 for i = 0, num_steps -2  do
+	 for i = 0, num_steps -1  do
 	     lat = lat +1
 	     for l = 0, num_steps-1  do
 	     	 local index = i * num_steps + l +1
