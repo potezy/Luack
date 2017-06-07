@@ -109,37 +109,39 @@ function scan_line( matrix, board,i)
 	 local deltaY,dx1,dx0,color
 	 color = Color:new(128 , 0 , 0) --red
 	 deltaY = 1
+	 
+	 if (i == 25) then print("bot:",bot[1],bot[2], "\nmid:",mid[1],mid[2], "\ntop",top[1],top[2]) end
 
-	 --if (i == 34) then print(y0,y1,y2,i) end
-
-	 if (top[2] - bot[2] == 0) then dx0 = top[1] - bot[1]
+	 if (top[2] - bot[2] == 0) then dx0 = top[1] - bot[1] print(1)
 	 else dx0 = (top[1] - bot[1]) / (top[2] - bot[2]) end
 
-	 if (mid[2] - bot[2] == 0) then dx1 = mid[1] - bot[1]
+	 if (mid[2] - bot[2] == 0) then dx1 = mid[1] - bot[1] 
 	 else dx1 = (mid[1] - bot[1]) / (mid[2] - bot[2]) end
-	 print(dx0,dx1)
+	 --print(dx1)
 	 --dx1 is the shorter side
 
 	 --top[2] - bot[2] is how many Y values we go up
 	 --bot[2] is the beginning Y value max[2] is the end Y value
 	 local cx0,cx1
 	 cx0 = bot[1] 
-	 cx1 = mid[1]
+	 cx1 = bot[1]
+	 --if (mid[1] == bot[1]) then print(bot[1], mid[1]) end
 
 	 for minY = 0, top[2]-bot[2], deltaY do
 	     local currY = minY + bot[2]
 	     if (currY >= mid[2]) then
-	     	if(top[2] - mid[2] == 0) then dx1 = top[1] - mid[1]
+	     	if(top[2] - mid[2] == 0) then dx1 = 0
 		else dx1 = (top[1] - mid[1]) / (top[2] - mid[2]) end
 	     end
-	     draw_line(cx0, currY,cx1, currY,color,board)     	
+	     draw_line(cx0, currY,cx1, currY,color,board)  
+	     --if (i == 25) then print(cx0,cx1) end 	
 	     cx0 = cx0 + dx0
 	     cx1 = cx1 + dx1
 	 end 
 end
 
 function draw_polygons(matrix,board,c)
-	  for i = 1, sizeOf(matrix[1])-3 ,3 do
+	  for i = 1, sizeOf(matrix[1]) ,3 do
 	      local color = Color:new(0 , 0 , 128)
 	      if backface_cull(matrix[1][i],matrix[2][i],matrix[3][i], matrix[1][i+1],matrix[2][i+1],matrix[3][i+1],matrix[1][i+2],matrix[2][i+2],matrix[3][i+2]) then 
 	      --print("scanning line", i)

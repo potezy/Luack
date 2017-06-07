@@ -2,6 +2,8 @@
 push
 rotate
 y -30
+rotate
+x 45
 move
 250 250 0
 box
