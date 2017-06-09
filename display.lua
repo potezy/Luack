@@ -9,7 +9,7 @@ function clear_screen(s)
 	 end
 end
 
-function plot(s , c , x , y)
+function plot(s ,zb,  c , x , y, z)
 	 local newy =  math.floor(x) 
 	 local newx = math.floor(YRES - y -1) 
 	 --if(newy<0 or newx<0 or newy > YRES or newx > XRES) then print(newx , newy) end

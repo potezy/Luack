@@ -117,15 +117,15 @@ function scan_line( matrix, board,i)
 
 	 if (mid[2] - bot[2] == 0) then dx1 = mid[1] - bot[1] 
 	 else dx1 = (mid[1] - bot[1]) / (mid[2] - bot[2]) end
-	 --print(dx1)
 	 --dx1 is the shorter side
 
 	 --top[2] - bot[2] is how many Y values we go up
 	 --bot[2] is the beginning Y value max[2] is the end Y value
 	 local cx0,cx1
-	 cx0 = bot[1] 
-	 cx1 = bot[1]
-	 --if (mid[1] == bot[1]) then print(bot[1], mid[1]) end
+ 	 if (mid[2] == bot[2]) then cx1 =  mid[1]
+	 else cx1 = bot[1] end
+
+	 cx0 = bot[1]
 
 	 for minY = 0, top[2]-bot[2], deltaY do
 	     local currY = minY + bot[2]
@@ -133,8 +133,7 @@ function scan_line( matrix, board,i)
 	     	if(top[2] - mid[2] == 0) then dx1 = 0
 		else dx1 = (top[1] - mid[1]) / (top[2] - mid[2]) end
 	     end
-	     draw_line(cx0, currY,cx1, currY,color,board)  
-	     --if (i == 25) then print(cx0,cx1) end 	
+	     draw_line(cx0, currY,0, cx1, currY,0,color,board,zb)   	
 	     cx0 = cx0 + dx0
 	     cx1 = cx1 + dx1
 	 end 
@@ -145,7 +144,8 @@ function draw_polygons(matrix,board,c)
 	      local color = Color:new(0 , 0 , 128)
 	      if backface_cull(matrix[1][i],matrix[2][i],matrix[3][i], matrix[1][i+1],matrix[2][i+1],matrix[3][i+1],matrix[1][i+2],matrix[2][i+2],matrix[3][i+2]) then 
 	      --print("scanning line", i)
-	      --scan_line(matrix,board,i)  
+	      --scan_line(matrix,board,i)
+	      --[[  
 	      draw_line(matrix[1][i],
 			matrix[2][i],
 	   		matrix[1][i+1],
@@ -163,7 +163,7 @@ function draw_polygons(matrix,board,c)
 	   		matrix[1][i],
 	   		matrix[2][i],
 			color,board)	
-	
+			]]--
 		scan_line(matrix,board,i)	
 	 end
 
@@ -196,78 +196,91 @@ end
 
 
 --function to draw line
-function draw_line(x0 , y0 , x1, y1 , c , s)
-	 x0 = tonumber(x0)
-	 x1 = tonumber(x1)
-	 y0 = tonumber(y0)
-	 y1 = tonumber(y1)
+function draw_line(x0 , y0, z0 , x1, y1 ,z1 , c , s ,zb)
+	 local x,y,d,A,B
+	 local dy_east, dy_northeast, dx,east ,dx_northeast, d_east, d_northeast 
+	 local loop_start, loop_end
+	 local distance , z , dx
+	 local xt,yt
+
 	 if (x0>x1) then
-	    xt = x0 	   
+	    xt = x0
 	    yt = y0
+	    z = z0
 	    x0 = x1
 	    y0 = y1
+	    z0 = z1
 	    x1 = xt
 	    y1 = yt
+	    z1 = z
 	 end
+	 
 	 x = x0
 	 y = y0
-	 A = 2*(y1-y0)
-	 B = -2*(x1 - x0)
-	    if (math.abs(x1-x0) >= math.abs(y1-y0)) then
-	       if (A > 0) then
-	       	  D = A + B/2
-	       	  while (x <x1) do
-	       	     	plot(s,c,x,y)
-			if ( D >0) then	
-			   y = y +1  
-		     	   D = D + B
-			end
-			x = x +1
-			D = D + A
-		  end
-		  plot(s , c , x , y)
-	       else D = A - B/2
-	       	    while (x < x1) do
-		    	  plot(s,c,x,y)
-			  if (D<0) then
-			     y = y -1
-			     D = D - B
-			  end
-			  x = x +1
-			  D = D + A
-		    end
-		    plot(s,c,x,y)
-	       end
+	 z = z0
+	 A = 2 * (y1 - y0)
+	 B = -2 * (x1 - x0)
+	 local wide, tall = 0,0
+	 --octant 1 and 8
+	 if (math.abs(x1-x0) >= math.abs(y1-y0)) then
+	    wide = 1
+	    loop_start = x
+	    loop_end = x1
+	    dx_east, dx_northeast = 1,1
+	    dy_east = 0
+ 	    d_east = A
+    	    distance = x1 - x
+    	    if ( A > 0 ) then --octant 1
+      	        d = A + B/2
+      		dy_northeast = 1
+      		d_northeast = A + B
 	    else
-		if (A > 0) then
-		   D = A/2 + B
-		   while ( y < y1) do
-		   	 plot( s , c , x ,y)
-			 if ( D < 0) then
-			    x = x + 1
-			    D = D + A
-	    	   	 end
-			 y = y +1
-			 D = D + B
-		   end
-	 	   plot( s , c , x ,y)
-		else D = A/2 - B
-		     while (y > y1) do
-		     	   plot(s,c,x,y)
-			   if  (D > 0) then
-			       x = x +1
-			       D = D + A
-			   end
-			   y = y -1
-			   D = D - B
-		     end
-		     plot(s,c,x,y)
+		d = A - B/2
+		dy_northeast = -1
+		d_northeast = A + B
+	    end
+	 
+	 --octant 2 and 8
+	 else
+	    tall = 1
+	    dx_east = 0
+	    dx_northeast = 1
+	    distance = math.abs(y1-y)
+	    if (A > 0) then
+	       d = A/2 + B
+	       dy_east , dy_northeast = 1,1
+	       d_northeast = A + B
+	       d_east = B
+	       loop_start = y
+	       loop_end = y1
+	    else
+	       d = A/2 - B
+	       dy_east , dy_northeast = -1,-1
+	       d_northeast = A - B
+	       d_east = -1 * B
+	       loop_start = y1
+	       loop_end = y
+	    end
+	  end
+	  while ( loop_start < loop_end) do
+	  	plot(s,zb,c,x,y,z)
+		if ((wide and ((A > 0 and d > 0) or 
+		   	       (A < 0 and d < 0)))
+	            or 
+		    (tall and ((A > 0 and d < 0) or
+		    	       (A < 0 and d > 0) ))) then
+	       	   y = y + dy_northeast
+		   d = d + d_northeast
+		   x = x + dx_northeast
+		else
+		   x = x +dx_east
+		   d = d + d_east
+		   y = y + dy_east
 		end
-	
-	   end	
-	
+		loop_start = loop_start +1
+	 end 	
+	 plot(s , zb , c , x1 , y1 , z)
 end
-
 
 
 function draw(board, eMatrix)
