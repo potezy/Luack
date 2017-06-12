@@ -31,8 +31,7 @@ function parseFile(f)
 	     ln = lines[i]:split(" ")
 
 	     if (ln[1] == "line") then
-	     	args = lines[i+1]:split(" ")
-	     	addEdge(eMatrix, args[1], args[2],args[3],args[4],args[5],args[6])
+	     	addEdge(eMatrix, ln[2],ln[3],ln[4],ln[5],ln[6],ln[7])
 		matrixMult(top , eMatrix)
 		draw(board,eMatrix)
 		eMatrix = makeMatrix(4,0)		
@@ -41,21 +40,18 @@ function parseFile(f)
 	     	    identify(tMatrix)
 	
 	     elseif (ln[1] == "scale") then
-	     	    args = lines[i+1]:split(" ")
-		    temp = scale(args[1], args[2], args[3])
+		    temp = scale(ln[2], ln[3], ln[4])
 		    top =matrixMult(top,temp)
 		    lstack[sizeOf(lstack)] = top		    
 
 	     elseif (ln[1] == "move") then 
-	     	    args = lines[i+1]:split(" ")
-	     	    temp = translate(args[1], args[2],args[3])
+	     	    temp = translate(ln[2],ln[3],ln[4])
 		    --printMatrix(temp)
 		    top = matrixMult(top,temp)		    		    	      
 		    lstack[sizeOf(lstack)] = top		    
 
 	     elseif (ln[1] == "rotate") then
-	     	    args = lines[i+1]:split(" ")
-	     	    temp = rotate(args[1], math.rad(args[2]))
+	     	    temp = rotate(ln[2], math.rad(ln[3]))
 		    top = matrixMult(top,temp)		   	
 		    lstack[sizeOf(lstack)] = top		    
 
@@ -64,9 +60,8 @@ function parseFile(f)
 		    poly_matrix = matrixMult(tMatrix,poly_matrix)	
 
 	     elseif (ln[1] == "save") then
-	     	    args = lines[i+1]:split(" ")
 		    save(board)
-		    n = args[1]
+		    n = ln[2]
 		    os.execute("convert line.ppm " .. n) 
 	
 	     elseif (ln[1] == "display") then
@@ -76,15 +71,13 @@ function parseFile(f)
 	     	    os.execute(a) 
 	
 	     elseif (ln[1] == "circle") then
-	     	    args = lines[i+1]:split(" ")
-		    circle(args[1], args[2], args[3], args[4])	
+		    circle(ln[2], ln[3], ln[4], ln[5])	
 		    eMatrix =matrixMult(top,eMatrix)
 		    draw(board,eMatrix)
 		    eMatrix = makeMatrix(4,0)	    	    
 
 	     elseif (ln[1] == "hermite" or ln[1] == "bezier") then
-	     	    args = lines[i+1]:split(" ")
-		    add_curve(args[1],args[2],args[3],args[4],args[5],args[6],args[7],args[8], ln[1])
+		    add_curve(ln[2],ln[3],ln[4],ln[5],ln[6],ln[7],ln[8],ln[9], ln[1])
 		    eMatrix =matrixMult(top,eMatrix)
 		    draw(board, eMatrix)
 		    eMatrix = makeMatrix(4,0)		    
@@ -94,24 +87,21 @@ function parseFile(f)
 		    poly_matrix = makeMatrix(4,0)		    
 
 	     elseif (ln[1] == "sphere") then
-	     	    args = lines[i+1]:split(" ")
-		    add_sphere(args[1],args[2],args[3],args[4])
+		    add_sphere(ln[2],ln[3],ln[4],ln[5])
 		    poly_matrix = matrixMult(top,poly_matrix)
 		    draw_polygons(poly_matrix,board,4)
 		    poly_matrix = makeMatrix(4,0)		    
 
 	     elseif (ln[1] == "torus") then
-	     	    args = lines[i+1]:split(" ")
-		    add_torus(args[1],args[2],args[3],args[4],args[5])	     	    
+		    add_torus(ln[2],ln[3],ln[4],ln[5])	     	    
 		    
 		    poly_matrix = matrixMult(top,poly_matrix)
 		    draw_polygons(poly_matrix,board,4)
 		    poly_matrix = makeMatrix(4,0)
 
 	     elseif (ln[1] == "box") then
-	     	    args = lines[i+1]:split(" ")
 		    --print(args[6])
-		    add_box(args[1],args[2],args[3],args[4],args[5],args[6])
+		    add_box(ln[2],ln[3],ln[4],ln[5],ln[6],ln[7])
 		    
 		    --printMatrix(poly_matrix)
 		    --printMatrix(top)

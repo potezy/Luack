@@ -16,10 +16,13 @@ function plot(s ,zb,  c , x , y, z)
 	 --print(newx,newy)
 	 --x = math.abs(x - XRES)
 	 --print(x,y)
-	 if(newx >0 and newx<XRES and newy >0 and newy<YRES) then
+	 if (newx >0 and newx<XRES and newy >0 and newy<YRES) then
+	    if (z >= zbuffer[newx][newy]) then	 
+	      zbuffer[newx][newy] = z 
 	      s[newx][newy].red = c.red
 	      s[newx][newy].green = c.green
 	      s[newx][newy].blue = c.blue
+	    end  
 	 end
 end
 

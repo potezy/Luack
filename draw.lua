@@ -4,6 +4,16 @@ YRES = 500
 step = .1
 MAX_COLOR = 255
 
+zbuffer = {{}}
+for i = 1, XRES do
+    zbuffer[i] = {}
+    for k = 1, YRES do
+    	zbuffer[i][k] = -100000000
+    end
+end
+
+--print(zbuffer[4][4])
+
 poly_matrix = {{},{},{},{}}
 
 function add_box(x , y , z , width , height, depth)
@@ -59,36 +69,36 @@ function add_polygon(matrix,x0,y0,z0, x1,y1,z1, x2,y2,z2)
 	 addPoint(matrix, x2,y2,z2)
 end
 
-function vertices(x0,x1,x2,y0,y1,y2)
+function vertices(x0,x1,x2,y0,y1,y2,z0,z1,z2)
 	 local top,mid,bot
 	 if (y0>=y1 and y0>=y2) then
-	    top = {x0,y0}
+	    top = {x0,y0,z0}
 	    if (y1 >= y2) then
-	       mid = {x1,y1}
-	       bot = {x2,y2}
+	       mid = {x1,y1,z1}
+	       bot = {x2,y2,z2}
 	    else
-	       mid = {x2,y2}
-	       bot = {x2,y1}
+	       mid = {x2,y2,z2}
+	       bot = {x2,y1,z1}
 	    end
 
 	 elseif (y1>=y2 and y1>=y0) then	
-	    top = {x1,y1}
+	    top = {x1,y1,z1}
 	    if (y0 >= y2) then
-	       mid = {x0,y0}
-	       bot = {x2,y2}
+	       mid = {x0,y0,z0}
+	       bot = {x2,y2,z2}
 	    else
-	       mid = {x2,y2}
-	       bot = {x0,y0} 		
+	       mid = {x2,y2,z2}
+	       bot = {x0,y0,z0} 		
 	    end
 
 	 else
-	    top = {x2,y2}
+	    top = {x2,y2,z2}
 	    if (y0 >= y1) then
-	       mid = {x0,y0} 
-	       bot = {x1,y1}
+	       mid = {x0,y0,z0} 
+	       bot = {x1,y1,z1}
 	    else 
-	       mid = {x1,y1}
-	       bot = {x0,y0}	    
+	       mid = {x1,y1,z1}
+	       bot = {x0,y0,z0}	    
 	    end
 
 	  end
@@ -97,35 +107,44 @@ function vertices(x0,x1,x2,y0,y1,y2)
 end
 
 function scan_line( matrix, board,i)
-	 local x0,x1,x2,y0,y1,y2,bot,top,mid
+	 local x0,x1,x2,y0,y1,y2,z0,z1,z2,bot,top,mid
 	 x0 = matrix[1][i]
 	 x1 = matrix[1][i+1]
 	 x2 = matrix[1][i+2]
 	 y0 = matrix[2][i]
 	 y1 = matrix[2][i+1]
 	 y2 = matrix[2][i+2]
-	 bot,mid,top = vertices(x0,x1,x2,y0,y1,y2)
+	 z0 = matrix[3][i]
+	 z1 = matrix[3][i+1]
+	 z2 = matrix[3][i+2]
+	 bot,mid,top = vertices(x0,x1,x2,y0,y1,y2,z0,z1,z2)
 	 
-	 local deltaY,dx1,dx0,color
+	 local deltaY,dx1,dx0,color, dz
 	 color = Color:new(128 , 0 , 0) --red
 	 deltaY = 1
 	 
-	 if (i == 25) then print("bot:",bot[1],bot[2], "\nmid:",mid[1],mid[2], "\ntop",top[1],top[2]) end
+	 if (i == 25) then print("bot:",bot[1],bot[2],bot[3], "\nmid:",mid[1],mid[2],mid[3], "\ntop",top[1],top[2],top[3]) end
 
-	 if (top[2] - bot[2] == 0) then dx0 = top[1] - bot[1] print(1)
+	 if (top[2] - bot[2] == 0) then dx0 = top[1] - bot[1] 
 	 else dx0 = (top[1] - bot[1]) / (top[2] - bot[2]) end
 
 	 if (mid[2] - bot[2] == 0) then dx1 = mid[1] - bot[1] 
 	 else dx1 = (mid[1] - bot[1]) / (mid[2] - bot[2]) end
 	 --dx1 is the shorter side
+	 
+	 if (top[2] - bot[2] == 0) then dz0 = top[3] - bot[3]
+	 
+	 dz0 = 0
+	 dz1 = 0
 
 	 --top[2] - bot[2] is how many Y values we go up
 	 --bot[2] is the beginning Y value max[2] is the end Y value
-	 local cx0,cx1
- 	 if (mid[2] == bot[2]) then cx1 =  mid[1]
-	 else cx1 = bot[1] end
 
+	 local cx0,cx1,cz0,cz1
+ 	 if (mid[2] == bot[2]) then cx1 =  mid[1] cz1 = mid[3]
+	 else cx1 = bot[1] cz1 = bot[1] end
 	 cx0 = bot[1]
+	 cz0 = bot[3]
 
 	 for minY = 0, top[2]-bot[2], deltaY do
 	     local currY = minY + bot[2]
@@ -133,9 +152,12 @@ function scan_line( matrix, board,i)
 	     	if(top[2] - mid[2] == 0) then dx1 = 0
 		else dx1 = (top[1] - mid[1]) / (top[2] - mid[2]) end
 	     end
+	     
 	     draw_line(cx0, currY,0, cx1, currY,0,color,board,zb)   	
 	     cx0 = cx0 + dx0
 	     cx1 = cx1 + dx1
+	     cz0 = cz0 + dz0
+	     cz1 = cz1 + dz1
 	 end 
 end
 
