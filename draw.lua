@@ -17,52 +17,36 @@ end
 poly_matrix = {{},{},{},{}}
 
 function add_box(x , y , z , width , height, depth)
-	 local x1,y1,z1,x0,y0,z0
-	 x0 = x
+	 local x1,y1,z1
 	 x1 = x + width
-	 y0 = y
 	 y1 = y - height
-	 z0 = z
 	 z1 = z - depth
-	add_polygon(poly_matrix, x0,y0,z0, --v1
-	             x0,y0,z1, 
-		     x1,y0,z0) 
-	add_polygon(poly_matrix,x0,y0,z1, 
-		     x1,y0,z1, 
-		     x1,y0,z0) 
-	add_polygon(poly_matrix,x0,y0,z0,
-		     x1,y0,z0,
-		     x1,y1,z0)
-	add_polygon(poly_matrix,x0,y1,z0,
-		     x0,y0,z0,
-		     x1,y1,z0)
-	add_polygon(poly_matrix,x1,y0,z0,
-		     x1,y0,z1,
-		     x1,y1,z1)
-	 add_polygon(poly_matrix,x1,y1,z1,
-		     x1,y1,z0,
-		     x1,y0,z0)
-	 add_polygon(poly_matrix,x1,y0,z1,
-		     x0,y0,z1,
-		     x0,y1,z1)
-	 add_polygon(poly_matrix,x0,y1,z1,
-		     x1,y1,z1,
-		     x1,y0,z1)
-	 add_polygon(poly_matrix,x0,y0,z1,
-	             x0,y0,z0,
-		     x0,y1,z0)
-	 add_polygon(poly_matrix,x0,y1,z0,
-		     x0,y1,z1,
-		     x0,y0,z1)	
-	 add_polygon(poly_matrix,x0,y1,z0,
-		     x1,y1,z0,
-		     x1,y1,z1)
-	 add_polygon(poly_matrix,x1,y1,z1,
-		     x0,y1,z1,
-	 	     x0,y1,z0)
+	 --front
+  	 add_polygon(poly_matrix, x, y, z, x1, y1, z, x1, y, z)
+  	 add_polygon(poly_matrix, x, y, z, x, y1, z, x1, y1, z)
+  
+	 --back
+  	 add_polygon(poly_matrix, x1, y, z1, x, y1, z1, x, y, z1)
+  	 add_polygon(poly_matrix, x1, y, z1, x1, y1, z1, x, y1, z1)
+  
+	 --right side
+  	 add_polygon(poly_matrix, x1, y, z, x1, y1, z1, x1, y, z1)
+  	 add_polygon(poly_matrix, x1, y, z, x1, y1, z, x1, y1, z1)
+
+  	 --left side
+  	 add_polygon(poly_matrix, x, y, z1, x, y1, z, x, y, z)
+  	 add_polygon(poly_matrix, x, y, z1, x, y1, z1, x, y1, z)
+  
+	 --top
+  	 add_polygon(poly_matrix, x, y, z1, x1, y, z, x1, y, z1)
+  	 add_polygon(poly_matrix, x, y, z1, x, y, z, x1, y, z)
+
+  	 --bottom
+  	 add_polygon(poly_matrix, x, y1, z, x1, y1, z1, x1, y1, z)
+  	 add_polygon(poly_matrix, x, y1, z, x, y1, z1, x1, y1, z1)
 end
 
-function add_polygon(matrix,x0,y0,z0, x1,y1,z1, x2,y2,z2)
+function add_polygon(matrix,x0,y0,z0, x1,y1,z1, x2,y2,z2,c)
 	 local temp = sizeOf(matrix[1])
 	 addPoint(matrix, x0,y0,z0)
 	 addPoint(matrix, x1,y1,z1)
@@ -106,7 +90,7 @@ function vertices(x0,x1,x2,y0,y1,y2,z0,z1,z2)
 	  return bot,mid,top 	 
 end
 
-function scan_line( matrix, board,i)
+function scan_line( matrix, board,i,c)
 	 local x0,x1,x2,y0,y1,y2,z0,z1,z2,bot,top,mid
 	 x0 = matrix[1][i]
 	 x1 = matrix[1][i+1]
@@ -118,12 +102,14 @@ function scan_line( matrix, board,i)
 	 z1 = matrix[3][i+1]
 	 z2 = matrix[3][i+2]
 	 bot,mid,top = vertices(x0,x1,x2,y0,y1,y2,z0,z1,z2)
-	 
+	 --print(i)
 	 local deltaY,dx1,dx0,color, dz
-	 color = Color:new(128 , 0 , 0) --red
+	 if (i > 28) then color = Color:new(0,0,222)
+	 else color = Color:new(222,0,0) end
+	 color = Color:new(50,7 * i^2 % 255, 100)
 	 deltaY = 1
 	 
-	 if (i == 25) then print("bot:",bot[1],bot[2],bot[3], "\nmid:",mid[1],mid[2],mid[3], "\ntop",top[1],top[2],top[3]) end
+	 --if (i == 25) then print("bot:",bot[1],bot[2],bot[3], "\nmid:",mid[1],mid[2],mid[3], "\ntop",top[1],top[2],top[3]) end
 
 	 if (top[2] - bot[2] == 0) then dx0 = top[1] - bot[1] 
 	 else dx0 = (top[1] - bot[1]) / (top[2] - bot[2]) end
@@ -133,41 +119,48 @@ function scan_line( matrix, board,i)
 	 --dx1 is the shorter side
 	 
 	 if (top[2] - bot[2] == 0) then dz0 = top[3] - bot[3]
-	 
-	 dz0 = 0
-	 dz1 = 0
+	 else dz0 = (top[3] - bot[3]) / (top[2] - bot[2]) end
+
+	 if (mid[2] - bot[2] == 0) then dz1 = mid[3] - bot[3]
+	 else dz1 = (mid[3] - bot[3]) / (mid[2] - bot[2]) end
+
+	 --print(mid[3] , bot[3] , mid[2] , bot[2])	 
 
 	 --top[2] - bot[2] is how many Y values we go up
 	 --bot[2] is the beginning Y value max[2] is the end Y value
 
 	 local cx0,cx1,cz0,cz1
  	 if (mid[2] == bot[2]) then cx1 =  mid[1] cz1 = mid[3]
-	 else cx1 = bot[1] cz1 = bot[1] end
+	 else cx1 = bot[1] cz1 = bot[3] end
+
 	 cx0 = bot[1]
 	 cz0 = bot[3]
-
+	 --print(bot[1],bot[2])
+	 --print(cz0, cz1)
 	 for minY = 0, top[2]-bot[2], deltaY do
 	     local currY = minY + bot[2]
 	     if (currY >= mid[2]) then
-	     	if(top[2] - mid[2] == 0) then dx1 = 0
-		else dx1 = (top[1] - mid[1]) / (top[2] - mid[2]) end
+	     	if(top[2] - mid[2] == 0) then dx1 = 0 dz1 = 0
+		else dx1 = (top[1] - mid[1]) / (top[2] - mid[2]) dz1 = (top[3] - mid[3]) / (top[2] - mid[2]) end
 	     end
 	     
-	     draw_line(cx0, currY,0, cx1, currY,0,color,board,zb)   	
+	     draw_line(cx0, currY,cz0, cx1, currY,cz1,color,board,zb)   	
 	     cx0 = cx0 + dx0
 	     cx1 = cx1 + dx1
 	     cz0 = cz0 + dz0
 	     cz1 = cz1 + dz1
+	     --print(dz0 , dz1)
 	 end 
 end
 
 function draw_polygons(matrix,board,c)
 	  for i = 1, sizeOf(matrix[1]) ,3 do
-	      local color = Color:new(0 , 0 , 128)
-	      if backface_cull(matrix[1][i],matrix[2][i],matrix[3][i], matrix[1][i+1],matrix[2][i+1],matrix[3][i+1],matrix[1][i+2],matrix[2][i+2],matrix[3][i+2]) then 
+	      n = backface_cull(matrix[1][i],matrix[2][i],matrix[3][i], matrix[1][i+1],matrix[2][i+1],matrix[3][i+1],matrix[1][i+2],matrix[2][i+2],matrix[3][i+2]) 
+	      if (n > 0) then  
+	      --print(n , i)
 	      --print("scanning line", i)
 	      --scan_line(matrix,board,i)
-	      --[[  
+	      --[[ 
 	      draw_line(matrix[1][i],
 			matrix[2][i],
 	   		matrix[1][i+1],
@@ -186,7 +179,7 @@ function draw_polygons(matrix,board,c)
 	   		matrix[2][i],
 			color,board)	
 			]]--
-		scan_line(matrix,board,i)	
+		scan_line(matrix,board,i,c)	
 	 end
 
 	 end
@@ -224,7 +217,7 @@ function draw_line(x0 , y0, z0 , x1, y1 ,z1 , c , s ,zb)
 	 local loop_start, loop_end
 	 local distance , z , dx
 	 local xt,yt
-
+	 local dz
 	 if (x0>x1) then
 	    xt = x0
 	    yt = y0
@@ -244,6 +237,7 @@ function draw_line(x0 , y0, z0 , x1, y1 ,z1 , c , s ,zb)
 	 B = -2 * (x1 - x0)
 	 local wide, tall = 0,0
 	 --octant 1 and 8
+	 --print(z1,z0 ,dz)
 	 if (math.abs(x1-x0) >= math.abs(y1-y0)) then
 	    wide = 1
 	    loop_start = x
@@ -252,6 +246,8 @@ function draw_line(x0 , y0, z0 , x1, y1 ,z1 , c , s ,zb)
 	    dy_east = 0
  	    d_east = A
     	    distance = x1 - x
+	    if (x1 - x0 == 0) then dz = (z1 - z0)
+	    else dz = (z1 - z0) / (x1 - x0) end
     	    if ( A > 0 ) then --octant 1
       	        d = A + B/2
       		dy_northeast = 1
@@ -262,8 +258,10 @@ function draw_line(x0 , y0, z0 , x1, y1 ,z1 , c , s ,zb)
 		d_northeast = A + B
 	    end
 	 
-	 --octant 2 and 8
+	 --octant 2 and 7
 	 else
+	    if (y1 - y0 == 0) then dz = (z1 - z0)
+	    else dz = (z1 - z0) / (y1 - y0) end
 	    tall = 1
 	    dx_east = 0
 	    dx_northeast = 1
@@ -294,10 +292,12 @@ function draw_line(x0 , y0, z0 , x1, y1 ,z1 , c , s ,zb)
 	       	   y = y + dy_northeast
 		   d = d + d_northeast
 		   x = x + dx_northeast
+		   z = z + dz
 		else
-		   x = x +dx_east
+		   x = x + dx_east
 		   d = d + d_east
 		   y = y + dy_east
+		   z = z + dz
 		end
 		loop_start = loop_start +1
 	 end 	
@@ -361,18 +361,7 @@ function circle(cx , cy , cz , r)
 	 end
 	 
 end
---[[
-function add_box(x , y , z , width , height, depth)
-	 addEdge(eMatrix, x, y, z, x, y, z)--upper left
-	 addEdge(eMatrix, x+width, y, z, x+width, y, z)--upper right
-	 addEdge(eMatrix, x, y-height, z, x, y-height, z)--lower left
-	 addEdge(eMatrix, x+width, y-height, z, x+width, y-height, z)--lower right
-	 addEdge(eMatrix, x, y, z-depth, x, y, z-depth)
-	 addEdge(eMatrix, x+width, y, z-depth, x+width, y, z-depth)
-	 addEdge(eMatrix, x, y-height,z-depth,x,y-height,z-depth)
-	 addEdge(eMatrix, x+width, y-height,z-depth,x+width,y-height,z-depth)
-end
---]]
+
 function add_sphere(cx , cy , cz , r )
 	 local sphere_points,num_steps, x0 , y0 , z0 ,x1,y1,z1,x2,y2,z2,x3,y3,z3
 	 sphere_points = generate_sphere(cx,cy,cz,r)
@@ -517,6 +506,6 @@ function backface_cull(x0,y0,z0,x1,y1,z1,x2,y2,z2)
 	 dx1 = x2-x0
 	 dy1 = y2-y0
 	 dy0 = y1-y0
-	 n = dx0*dy1 - dy0*dx1
-	 return n > 0
+	 n = dx0*dy1 - dy0*dx1 
+	 return n
 end

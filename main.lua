@@ -27,6 +27,7 @@ function main()
 	 clear_screen(board)
 	 --edgeMaker(eMatrix)
 	 parseFile("commands")
+	 --printMatrix(poly_matrix)
 end
 main()
 --print("potato")

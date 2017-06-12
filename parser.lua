@@ -13,19 +13,37 @@ function string:split(sep) --credit to lua user manual
  end
 
 function make_int(matrix)
-	 for i = 1, sizeOf(matrix) do
+	 for i = 1, sizeOf(matrix)+1 do
 	     matrix[i] = tonumber(matrix[i])
+	     --print(i)
 	 end
 	 return matrix
 end
 
 function parseFile(f)
 	 local lines,s,n,lstack,sizeL,top,temp = {},0,"pic.png"
+	 local basename, frames
+	 frames = 1
 	 lstack = new_stack()
 	 for line in io.lines(f) do
 	     table.insert(lines, line)
 	     s = s + 1
 	 end
+
+	 for i = 1, s do
+	     ln = lines[i]:split(" ")
+	     if (ln[1] == "basename") then basename = ln[2]
+	     elseif (ln[1] == "frames") then frames = tonumber(ln[2]) end
+	 end
+
+	 local framesMatrix = {}
+	 for i = 1 , frames do
+	     framesMatrix[i] = {}
+	     --print(i)
+	 end
+	 
+	 
+	 if(frames == 1) then 
 	 for i = 1, s do 
 	     top = lstack[sizeOf(lstack)]
 	     ln = lines[i]:split(" ")
@@ -93,7 +111,7 @@ function parseFile(f)
 		    poly_matrix = makeMatrix(4,0)		    
 
 	     elseif (ln[1] == "torus") then
-		    add_torus(ln[2],ln[3],ln[4],ln[5])	     	    
+		    add_torus(ln[2],ln[3],ln[4],ln[5],ln[6])	     	    
 		    
 		    poly_matrix = matrixMult(top,poly_matrix)
 		    draw_polygons(poly_matrix,board,4)
@@ -118,9 +136,13 @@ function parseFile(f)
 	     elseif (ln[1] == "pop") then
 	     	    pop(lstack)
 	     
-	     
+	     elseif (ln[1] == "vary") then 
+
+	     elseif (ln[1] == "") then 
 	     	    	     
 	     end
+	     end
+	     print(basename, frames)
  	 end
 end
 
